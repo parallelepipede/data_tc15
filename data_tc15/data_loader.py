@@ -227,14 +227,52 @@ class DataLoader():
                 with tarfile.open(filename_archive,"r:gz") as tar:
                     if self.reload: 
                         print(filename + " Downloaded")
-                    tar.extractall(path = path)
+                    def is_within_directory(directory, target):
+                        
+                        abs_directory = os.path.abspath(directory)
+                        abs_target = os.path.abspath(target)
+                    
+                        prefix = os.path.commonprefix([abs_directory, abs_target])
+                        
+                        return prefix == abs_directory
+                    
+                    def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+                    
+                        for member in tar.getmembers():
+                            member_path = os.path.join(path, member.name)
+                            if not is_within_directory(path, member_path):
+                                raise Exception("Attempted Path Traversal in Tar File")
+                    
+                        tar.extractall(path, members, numeric_owner=numeric_owner) 
+                        
+                    
+                    safe_extract(tar, path=path)
                     return self.load_dataset(tar.getnames())
         elif filename.endswith('.tar'):
             if tarfile.is_tarfile(filename_archive):
                 with tarfile.open(filename_archive,"r:") as tar:
                     if self.reload : 
                         print(filename + " Downloaded")
-                    tar.extractall(path = path)
+                    def is_within_directory(directory, target):
+                        
+                        abs_directory = os.path.abspath(directory)
+                        abs_target = os.path.abspath(target)
+                    
+                        prefix = os.path.commonprefix([abs_directory, abs_target])
+                        
+                        return prefix == abs_directory
+                    
+                    def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+                    
+                        for member in tar.getmembers():
+                            member_path = os.path.join(path, member.name)
+                            if not is_within_directory(path, member_path):
+                                raise Exception("Attempted Path Traversal in Tar File")
+                    
+                        tar.extractall(path, members, numeric_owner=numeric_owner) 
+                        
+                    
+                    safe_extract(tar, path=path)
                     return self.load_dataset(tar.getnames())
         elif filename.endswith('.zip'):             
             with ZipFile(filename_archive,"r") as zip_ref:
